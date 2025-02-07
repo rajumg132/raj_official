@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import nodemailer from 'nodemailer';
+import path from 'path';
 
 // Load environment variables before importing SocialMediaAgent
 dotenv.config();
@@ -203,106 +204,71 @@ sendDailyStats();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  const status = agent.getStatus();
-  res.json({ 
-    status: 'ok',
-    twitterBot: {
-      isRunning: true,
-      tweetsPostedToday: status.tweetsPostedToday,
-      lastTweetTime: status.lastTweetTime
-    }
-  });
-});
-
-// Twitter tweet endpoint
-app.post('/api/twitter/tweet', async (req, res) => {
   try {
-    const { text } = req.body;
-
-    const token = {
-      key: process.env.TWITTER_ACCESS_TOKEN,
-      secret: process.env.TWITTER_ACCESS_SECRET
-    };
-
-    const endpointURL = 'https://api.twitter.com/2/tweets';
-    const authHeader = oauth.toHeader(oauth.authorize({
-      url: endpointURL,
-      method: 'POST'
-    }, token));
-
-    const response = await fetch(endpointURL, {
-      method: 'POST',
-      headers: {
-        ...authHeader,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({ text })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Twitter API error:', data);
-      
-      // Handle rate limiting specifically
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('retry-after') || '60';
-        const resetTime = new Date(Date.now() + parseInt(retryAfter) * 1000).toLocaleString();
-        console.log(`Rate limit exceeded. Reset time: ${resetTime}`);
-        
-        return res.status(429).json({
-          error: 'Rate limit exceeded',
-          retryAfter: parseInt(retryAfter),
-          resetTime: resetTime,
-          message: `Twitter API rate limit exceeded. Rate limit will reset at ${resetTime}.`
-        });
+    const status = agent.getStatus();
+    res.json({ 
+      status: 'ok',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      twitterBot: {
+        isRunning: status.isRunning,
+        tweetsPostedToday: status.tweetsPostedToday,
+        lastTweetTime: status.lastTweetTime
       }
-
-      throw new Error(data.detail || data.errors?.[0]?.message || 'Failed to post tweet');
-    }
-
-    console.log('Tweet posted successfully:', {
-      id: data.data.id,
-      text: data.data.text,
-      timestamp: new Date().toISOString()
     });
-    
-    res.json(data);
   } catch (error) {
-    console.error('Twitter tweet error:', error.message);
-    const statusCode = error.status || (error.message.includes('rate limit') ? 429 : 500);
-    res.status(statusCode).json({ 
-      error: error.message,
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'error',
+      message: error.message,
       timestamp: new Date().toISOString()
     });
   }
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('Received SIGTERM. Performing graceful shutdown...');
-  agent.stopScheduledPosts();
-  // Send final stats email
-  sendDailyStats().finally(() => {
-    process.exit(0);
-  });
-});
+// Serve static files from the dist directory
+app.use(express.static('dist'));
 
-process.on('SIGINT', () => {
-  console.log('Received SIGINT. Performing graceful shutdown...');
-  agent.stopScheduledPosts();
-  // Send final stats email
-  sendDailyStats().finally(() => {
-    process.exit(0);
-  });
+// Handle SPA routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';  // This ensures the server listens on all network interfaces
 
-app.listen(PORT, HOST, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
   console.log('Allowed origins:', allowedOrigins);
   console.log('Environment:', process.env.NODE_ENV);
-}); 
+});
+
+// Graceful shutdown
+const gracefulShutdown = async () => {
+  console.log('Received shutdown signal. Starting graceful shutdown...');
+  
+  // Stop the social media agent
+  agent.stopScheduledPosts();
+  
+  // Send final stats email
+  try {
+    await sendDailyStats();
+  } catch (error) {
+    console.error('Error sending final stats:', error);
+  }
+
+  // Close the server
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown); 
