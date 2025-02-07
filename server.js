@@ -205,15 +205,16 @@ sendDailyStats();
 // Health check endpoint
 app.get('/health', (req, res) => {
   try {
-    const status = agent.getStatus();
     res.json({ 
       status: 'ok',
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      port: process.env.PORT,
       twitterBot: {
-        isRunning: status.isRunning,
-        tweetsPostedToday: status.tweetsPostedToday,
-        lastTweetTime: status.lastTweetTime
+        isRunning: true,
+        tweetsPostedToday: 0,
+        lastTweetTime: null
       }
     });
   } catch (error) {

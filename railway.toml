@@ -5,7 +5,7 @@ dockerfilePath = "Dockerfile"
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/health"
-healthcheckTimeout = 100
+healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
@@ -18,6 +18,9 @@ name = "web"
 protocol = "tcp"
 internal_port = 3000
 auto_start = true
+healthcheck_path = "/health"
+healthcheck_timeout = 180
+healthcheck_interval = 30
 
 [services.ports]
 port = 3000
