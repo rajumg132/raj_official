@@ -1,19 +1,28 @@
 # Build stage
 FROM node:18-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
+# Install build dependencies and clean up cache in the same layer
+RUN apk add --no-cache python3 make g++ && \
+    rm -rf /var/cache/apk/*
 
 # Set working directory
 WORKDIR /app
 
+# Set npm configurations for better performance and memory usage
+ENV NODE_OPTIONS="--max-old-space-size=4096" \
+    NPM_CONFIG_LOGLEVEL=error \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_PREFER_OFFLINE=true \
+    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=600000
+
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with increased Node memory and specific npm config
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN npm config set fetch-retry-maxtimeout 600000 && \
-    npm install --no-audit --no-fund
+# Clear npm cache and install dependencies with optimizations
+RUN npm cache clean --force && \
+    npm install --production=false --no-audit --no-fund --prefer-offline && \
+    npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -24,18 +33,28 @@ RUN npm run build:all
 # Production stage
 FROM node:18-alpine
 
-# Install production dependencies only
-RUN apk add --no-cache python3 make g++
+# Install production dependencies and clean up in the same layer
+RUN apk add --no-cache python3 make g++ && \
+    rm -rf /var/cache/apk/*
 
 WORKDIR /app
+
+# Set npm configurations for production
+ENV NODE_ENV=production \
+    NODE_OPTIONS="--max-old-space-size=2048" \
+    NPM_CONFIG_LOGLEVEL=error \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_PREFER_OFFLINE=true
 
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies with increased Node memory and specific npm config
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN npm config set fetch-retry-maxtimeout 600000 && \
-    npm ci --only=production --no-audit --no-fund --prefer-offline
+# Install production dependencies only and clean up
+RUN npm cache clean --force && \
+    npm ci --only=production --no-audit --no-fund --prefer-offline && \
+    npm cache clean --force && \
+    rm -rf /root/.npm
 
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
