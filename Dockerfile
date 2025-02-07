@@ -28,8 +28,10 @@ RUN npm cache clean --force && \
 COPY . .
 
 # Build the application
-RUN npm run build:all && \
-    ls -la dist/
+RUN npm run build:server && \
+    npm run build:client && \
+    ls -la dist/ && \
+    ls -la dist/services/
 
 # Production stage
 FROM node:18-alpine
@@ -61,11 +63,8 @@ RUN npm cache clean --force && \
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server.js ./server.js
 
-# Create necessary directories
-RUN mkdir -p dist/services
-
-# Remove prestart script that requires TypeScript
-RUN npm pkg delete scripts.prestart
+# Update import path in server.js
+RUN sed -i 's|./dist/services/SocialMediaAgent.js|./dist/services/SocialMediaAgent.js|g' server.js
 
 # Expose the port the app runs on
 EXPOSE 3000
