@@ -28,7 +28,8 @@ RUN npm cache clean --force && \
 COPY . .
 
 # Build the application
-RUN npm run build:all
+RUN npm run build:all && \
+    ls -la dist/
 
 # Production stage
 FROM node:18-alpine
@@ -59,7 +60,9 @@ RUN npm cache clean --force && \
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server.js ./server.js
-COPY --from=builder /app/dist/services ./dist/services
+
+# Create necessary directories
+RUN mkdir -p dist/services
 
 # Remove prestart script that requires TypeScript
 RUN npm pkg delete scripts.prestart
