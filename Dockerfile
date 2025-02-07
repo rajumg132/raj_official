@@ -19,9 +19,8 @@ ENV NODE_OPTIONS="--max-old-space-size=4096" \
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with package-lock generation
+# Install all dependencies
 RUN npm cache clean --force && \
-    rm -rf node_modules package-lock.json && \
     npm install && \
     npm cache clean --force
 
@@ -48,13 +47,12 @@ ENV NODE_ENV=production \
     NPM_CONFIG_AUDIT=false \
     NPM_CONFIG_PREFER_OFFLINE=true
 
-# Copy package files and lock file from builder
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/package-lock.json ./
+# Copy package files
+COPY package*.json ./
 
-# Install production dependencies only and clean up
+# Install production dependencies only
 RUN npm cache clean --force && \
-    npm ci --omit=dev --no-audit --no-fund && \
+    npm install --omit=dev --no-audit --no-fund && \
     npm cache clean --force && \
     rm -rf /root/.npm
 
