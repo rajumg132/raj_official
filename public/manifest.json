@@ -1,0 +1,17 @@
+{
+  "name": "Raju Portfolio",
+  "short_name": "Portfolio",
+  "description": "Raju Guruvannavar's Portfolio Website",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+} 
