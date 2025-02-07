@@ -75,17 +75,42 @@ class SocialMediaAgent {
   private topicCategories: TopicCategories = {
     businessAndProductivity: {
       aiIntegration: [
-        'Customer Service Automation', 'Sales Automation', 'Marketing Automation',
-        'Document Processing', 'Data Analysis', 'Business Intelligence',
-        'Process Optimization', 'Cost Reduction'
+        'AI-Powered Customer Service Solutions',
+        'Intelligent Sales Automation',
+        'Smart Marketing Automation',
+        'Advanced Document Processing',
+        'Predictive Data Analysis',
+        'Real-time Business Intelligence',
+        'AI Process Optimization',
+        'Cost-Effective AI Solutions'
       ],
       solutions: [
-        'Custom AI Solutions', 'Enterprise Integration', 'Cloud Migration',
-        'Digital Transformation', 'Workflow Optimization', 'Resource Management'
+        'Custom Enterprise AI Development',
+        'Seamless AI Integration Services',
+        'Cloud Migration Excellence',
+        'Digital Transformation Strategy',
+        'AI Workflow Optimization',
+        'Intelligent Resource Management',
+        'AI Consulting Services',
+        'Machine Learning Solutions'
       ],
       benefits: [
-        'ROI Improvement', 'Efficiency Gains', 'Cost Savings',
-        'Productivity Boost', 'Quality Enhancement', 'Time Savings'
+        'Proven ROI Improvements',
+        'Significant Efficiency Gains',
+        'Substantial Cost Savings',
+        'Measurable Productivity Boost',
+        'Enhanced Service Quality',
+        'Rapid Time-to-Market',
+        'Competitive Advantage',
+        'Scalable Growth'
+      ],
+      success_stories: [
+        'Client Success Stories',
+        'Case Studies',
+        'Implementation Results',
+        'Performance Metrics',
+        'Customer Testimonials',
+        'Project Outcomes'
       ]
     },
 
@@ -149,37 +174,99 @@ class SocialMediaAgent {
     }
   };
 
-  private tweetTemplates = [
-    "🤯 Mind blown! Just tried {feature} for {context} and wow... {benefit}",
-    "🎉 Finally found the perfect solution for {context}! {feature} is a total game-changer. {benefit}",
-    "💡 Pro tip: If you're struggling with {context}, give {feature} a shot. {benefit}",
-    "🚀 Level up your {context} game with {feature}! {benefit}",
-    "😅 Spent way too long doing {context} manually before discovering {feature}. {benefit}",
-    "🎯 Here's a cool trick for {context}: {feature} makes it super easy. {benefit}",
-    "✨ Absolutely loving how {feature} transformed my {context} workflow! {benefit}",
-    "🔥 Hot take: {feature} is the best thing to happen to {context} in ages. {benefit}",
-    "🤓 Tech geek moment: {feature} just revolutionized how I handle {context}. {benefit}",
-    "💪 Power move: Switched to {feature} for {context} and never looking back! {benefit}",
-    "🎨 Getting creative with {feature} in my {context} projects. {benefit}",
-    "🌟 Just had one of those 'aha!' moments with {feature} in {context}. {benefit}"
-  ];
+  private tweetCategories = {
+    promotional: {
+      templates: [
+        "🚀 Our {feature} service is perfect for {context}. Here's why: {benefit}",
+        "💼 Client Spotlight: See how our {feature} transformed {context}, leading to {benefit}",
+        "📈 Success Story: Helped a {context} achieve {benefit} through our {feature}! Real results that speak for themselves.",
+        "🎉 Exciting news! Our enhanced {feature} for {context} now delivers even better {benefit}",
+        "👥 Client's words: '{feature} transformed our {context}, delivering {benefit}'"
+      ],
+      weight: 0.4  // 40% of tweets
+    },
+    educational: {
+      templates: [
+        "🎓 Pro Tip: Leverage {feature} for your {context} to achieve {benefit}",
+        "💡 Quick Guide: Implement {feature} in your {context} workflow to get {benefit}",
+        "🔍 Best Practice: When dealing with {context}, use {feature} to ensure {benefit}",
+        "📚 Did you know? Proper use of {feature} in {context} leads to {benefit}",
+        "💪 Power tip: Optimize your {context} by implementing {feature}, resulting in {benefit}"
+      ],
+      weight: 0.3  // 30% of tweets
+    },
+    helpful: {
+      templates: [
+        "❓ Facing challenges with {context}?\n✨ Solution: Try {feature}\n💫 Result: {benefit}",
+        "🎯 Quick troubleshooting for {context}:\n1️⃣ Implement {feature}\n2️⃣ Watch as you get {benefit}",
+        "💡 Struggling with {context}? Here's how {feature} helps: {benefit}",
+        "🔧 Common {context} issue? Here's a free tip:\nUse {feature} to get {benefit}",
+        "🤝 Community tip: For better {context} results, we recommend {feature} - {benefit}"
+      ],
+      weight: 0.3  // 30% of tweets
+    }
+  };
+
+  private lastUsedTweetCategory: string | null = null;
+
+  private selectTweetTemplate(): string {
+    // Get available categories (exclude last used if possible)
+    const categories = Object.keys(this.tweetCategories);
+    let availableCategories = this.lastUsedTweetCategory
+      ? categories.filter(cat => cat !== this.lastUsedTweetCategory)
+      : categories;
+
+    // If all categories used, reset
+    if (availableCategories.length === 0) {
+      availableCategories = categories;
+    }
+
+    // Select category based on weights
+    const totalWeight = availableCategories.reduce(
+      (sum, cat) => sum + this.tweetCategories[cat].weight,
+      0
+    );
+    
+    let random = Math.random() * totalWeight;
+    let selectedCategory = availableCategories[0];
+    
+    for (const category of availableCategories) {
+      random -= this.tweetCategories[category].weight;
+      if (random <= 0) {
+        selectedCategory = category;
+        break;
+      }
+    }
+
+    // Update last used category
+    this.lastUsedTweetCategory = selectedCategory;
+
+    // Select random template from category
+    const templates = this.tweetCategories[selectedCategory].templates;
+    return templates[Math.floor(Math.random() * templates.length)];
+  }
 
   private benefitTemplates = [
-    "Honestly, I'm geeking out over the results! 🤓",
-    "My productivity is through the roof! 🚀",
-    "Why didn't anyone tell me about this sooner? 😄",
-    "Trust me, your future self will thank you! 🙌",
-    "Total game-changer for my workflow! ⚡",
-    "I'm seriously impressed with what it can do! 🎯",
-    "This is the kind of innovation we need! 💡",
-    "Feeling pretty smart about this discovery! 😎",
-    "My team is already loving the difference! 🤝",
-    "Such a satisfying upgrade to the process! ✨",
-    "10/10 would recommend to fellow devs! 💯",
-    "Mind = blown by the possibilities! 🤯",
-    "This is the future of development, folks! 🌟",
-    "Absolutely worth checking out! 💪",
-    "DM me if you want to learn more about this! 📫"
+    "resulting in 30-50% efficiency improvements",
+    "leading to significant cost savings and ROI",
+    "boosting productivity by up to 40%",
+    "reducing manual work by 60%",
+    "accelerating time-to-market by weeks",
+    "improving customer satisfaction by 45%",
+    "cutting operational costs by 35%",
+    "increasing team productivity by 50%",
+    "delivering 3x faster results",
+    "achieving 99.9% accuracy rates",
+    "saving 20+ hours per week",
+    "reducing errors by 90%",
+    "scaling operations by 200%",
+    "improving decision-making by 70%",
+    "enhancing user experience significantly",
+    "generating 2x more qualified leads",
+    "streamlining workflows dramatically",
+    "providing real-time insights 24/7",
+    "ensuring 100% compliance",
+    "maximizing resource utilization by 65%"
   ];
 
   constructor(
@@ -350,7 +437,7 @@ class SocialMediaAgent {
   }
 
   private async generateContent(topic: string): Promise<Post> {
-    const template = this.tweetTemplates[Math.floor(Math.random() * this.tweetTemplates.length)];
+    const template = this.selectTweetTemplate();
     const benefit = this.benefitTemplates[Math.floor(Math.random() * this.benefitTemplates.length)];
 
     const prompt = `You are a tech professional sharing your genuine insights and experiences. Write a ${this.config.tone} tweet about ${topic} that sounds natural, engaging, and human, as if you're sharing a real insight or tip with your followers. 
@@ -365,7 +452,9 @@ Some guidelines:
 - Include real-world context or examples
 - Feel free to use appropriate emojis naturally
 - Make it sound like a real person tweeting, not a corporate message
-- Include a touch of humor or emotion where appropriate
+- Focus on providing value to the reader
+- If it's a promotional tweet, keep it subtle and focus on real benefits
+- If it's an educational/helpful tweet, make it actionable and specific
 - Avoid jargon unless it's commonly used in the field
 
 Format the response as a JSON object with:
