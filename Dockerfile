@@ -1,21 +1,41 @@
-# Use Node.js LTS version
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
 
-# Create app directory
+# Set working directory
 WORKDIR /app
 
-# Install app dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm ci --only=production
 
-# Copy app source
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build:all
+
+# Production stage
+FROM node:18-alpine
+
+# Install production dependencies only
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server.js ./server.js
 
 # Expose the port the app runs on
 EXPOSE 3000
