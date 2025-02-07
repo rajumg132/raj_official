@@ -19,7 +19,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096" \
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies
+# Install all dependencies (including dev dependencies)
 RUN npm cache clean --force && \
     npm install && \
     npm cache clean --force
@@ -59,6 +59,10 @@ RUN npm cache clean --force && \
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server.js ./server.js
+COPY --from=builder /app/dist/services ./dist/services
+
+# Remove prestart script that requires TypeScript
+RUN npm pkg delete scripts.prestart
 
 # Expose the port the app runs on
 EXPOSE 3000
@@ -67,5 +71,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-# Start the application
-CMD ["npm", "start"] 
+# Start the application without TypeScript build
+CMD ["node", "server.js"] 
