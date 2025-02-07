@@ -12,6 +12,7 @@
     "build:client": "vite build",
     "build:all": "npm run build:server && npm run build:client",
     "build": "npm run build:all",
+    "prestart": "npm run build:server",
     "start": "node server.js",
     "server": "npm run build:server && node server.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run server\"",

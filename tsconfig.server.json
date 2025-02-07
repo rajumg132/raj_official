@@ -12,8 +12,9 @@
     "declaration": true,
     "allowJs": true,
     "types": ["node"],
-    "lib": ["ES2020", "DOM"]
+    "lib": ["ES2020", "DOM"],
+    "resolveJsonModule": true
   },
-  "include": ["src/services/**/*"],
+  "include": ["src/services/**/*", "src/types/**/*"],
   "exclude": ["node_modules", "dist"]
 } 

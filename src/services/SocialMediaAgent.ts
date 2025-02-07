@@ -50,6 +50,17 @@ interface TwitterApiResponse {
   };
 }
 
+interface TweetTemplate {
+  templates: string[];
+  weight: number;
+}
+
+interface TweetCategories {
+  promotional: TweetTemplate;
+  educational: TweetTemplate;
+  helpful: TweetTemplate;
+}
+
 class SocialMediaAgent {
   private groqApiKey: string;
   private twitterConfig: TwitterConfig;
@@ -174,7 +185,7 @@ class SocialMediaAgent {
     }
   };
 
-  private tweetCategories = {
+  private tweetCategories: TweetCategories = {
     promotional: {
       templates: [
         "🚀 Our {feature} service is perfect for {context}. Here's why: {benefit}",
@@ -207,11 +218,11 @@ class SocialMediaAgent {
     }
   };
 
-  private lastUsedTweetCategory: string | null = null;
+  private lastUsedTweetCategory: keyof TweetCategories | null = null;
 
   private selectTweetTemplate(): string {
     // Get available categories (exclude last used if possible)
-    const categories = Object.keys(this.tweetCategories);
+    const categories = Object.keys(this.tweetCategories) as Array<keyof TweetCategories>;
     let availableCategories = this.lastUsedTweetCategory
       ? categories.filter(cat => cat !== this.lastUsedTweetCategory)
       : categories;
