@@ -10,8 +10,10 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including dev dependencies)
-RUN npm install
+# Install dependencies with increased Node memory and specific npm config
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+RUN npm config set fetch-retry-maxtimeout 600000 && \
+    npm install --no-audit --no-fund
 
 # Copy source code
 COPY . .
@@ -30,8 +32,10 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install production dependencies with increased Node memory and specific npm config
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+RUN npm config set fetch-retry-maxtimeout 600000 && \
+    npm ci --only=production --no-audit --no-fund --prefer-offline
 
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
