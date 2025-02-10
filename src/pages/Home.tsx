@@ -19,7 +19,8 @@ import {
   Terminal,
   MessageSquare,
   MessageCircle,
-  Send
+  Send,
+  ArrowUp
 } from 'lucide-react';
 import LoadingAnimation from '../components/shared/LoadingAnimation';
 import AiChat from '../components/AiChat';
@@ -207,6 +208,7 @@ interface FormState {
 
 const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
@@ -338,8 +340,8 @@ const Home: React.FC = () => {
             gsap.to(card, {
               opacity: 1,
               x: 0,
-              duration: 0.8,
-              delay: index * 0.2,
+              duration: 0.56,
+              delay: index * 0.14,
               ease: 'power3.out',
               scrollTrigger: {
                 trigger: card,
@@ -353,8 +355,8 @@ const Home: React.FC = () => {
             gsap.from(icon, {
               scale: 0,
               rotate: -180,
-              duration: 0.8,
-              delay: index * 0.2 + 0.3,
+              duration: 0.56,
+              delay: index * 0.14 + 0.21,
               ease: 'elastic.out(1, 0.5)',
               scrollTrigger: {
                 trigger: card,
@@ -369,8 +371,8 @@ const Home: React.FC = () => {
               gsap.to(feature, {
                 opacity: 1,
                 x: 0,
-                duration: 0.5,
-                delay: index * 0.2 + featureIndex * 0.1,
+                duration: 0.35,
+                delay: index * 0.14 + featureIndex * 0.07,
                 ease: 'power2.out',
                 scrollTrigger: {
                   trigger: feature,
@@ -387,7 +389,7 @@ const Home: React.FC = () => {
                 scale: 1.02,
                 rotateY: 5,
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
-                duration: 0.4,
+                duration: 0.28,
                 ease: 'power2.out'
               });
             });
@@ -398,7 +400,7 @@ const Home: React.FC = () => {
                 scale: 1,
                 rotateY: 0,
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                duration: 0.4,
+                duration: 0.28,
                 ease: 'power2.inOut'
               });
             });
@@ -455,10 +457,10 @@ const Home: React.FC = () => {
               opacity: 0,
               y: 30,
               rotateX: -15,
-              duration: 0.8,
-              delay: index * 0.2,
-            scrollTrigger: {
-              trigger: card,
+              duration: 0.56,
+              delay: index * 0.14,
+              scrollTrigger: {
+                trigger: card,
                 start: 'top center+=150',
                 toggleActions: 'play none none reverse'
               }
@@ -566,7 +568,7 @@ const Home: React.FC = () => {
             gsap.to(card, {
               opacity: 1,
               x: 0,
-              duration: 1,
+              duration: 0.7,
               ease: 'power3.out',
               scrollTrigger: {
                 trigger: card,
@@ -684,6 +686,57 @@ const Home: React.FC = () => {
             });
           });
         });
+
+        // Reviews section animations
+        const reviewsSection = document.querySelector('.reviews-section');
+        if (reviewsSection) {
+          // Animate section title with split text effect
+          const title = reviewsSection.querySelector('h2');
+          const subtitle = reviewsSection.querySelector('p');
+          
+          if (title) {
+            gsap.from(title, {
+              opacity: 0,
+              y: 30,
+              duration: 0.8,
+              scrollTrigger: {
+                trigger: title,
+                start: 'top center+=100',
+                toggleActions: 'play none none reverse'
+              }
+            });
+          }
+
+          if (subtitle) {
+            gsap.from(subtitle, {
+              opacity: 0,
+              y: 20,
+              duration: 0.8,
+              delay: 0.2,
+              scrollTrigger: {
+                trigger: subtitle,
+                start: 'top center+=100',
+                toggleActions: 'play none none reverse'
+              }
+            });
+          }
+
+          // Animate review cards
+          const reviewCards = reviewsSection.querySelectorAll('.review-card');
+          reviewCards.forEach((card, index) => {
+            gsap.from(card, {
+              opacity: 0,
+              y: 50,
+              duration: 0.56,
+              delay: index * 0.14,
+              scrollTrigger: {
+                trigger: card,
+                start: 'top center+=150',
+                toggleActions: 'play none none reverse'
+              }
+            });
+          });
+        }
       });
 
       return () => {
@@ -694,6 +747,22 @@ const Home: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, [isLoading]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -768,24 +837,24 @@ const Home: React.FC = () => {
 
         <div className="hero-content relative z-20 h-full flex items-center justify-center">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-8 transition-colors duration-300">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-3 transition-colors duration-300">
               Hi, I'm
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary-dark mx-3">
                 RAJ
               </span>
             </h1>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-10 transition-colors duration-300">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-6 transition-colors duration-300">
               Full Stack Developer
             </h2>
             
-            <p className="text-xl text-gray-700 dark:text-gray-300 mb-12 max-w-2xl mx-auto transition-colors duration-300">
+            <p className="text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto transition-colors duration-300">
               Transforming ideas into powerful web solutions with modern technologies
               and clean, efficient code. Specialized in building scalable applications
               with cutting-edge tech stacks.
             </p>
 
             {/* Highlight Tags */}
-            <div className="flex flex-wrap justify-center gap-2 mb-16">
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
               
               <span className="text-sm text-primary-dark dark:text-primary-light">🌐 Web Development</span>
               
@@ -800,7 +869,7 @@ const Home: React.FC = () => {
 
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <button
                 onClick={() => servicesRef.current?.scrollIntoView({ behavior: 'smooth' })}
                 className="px-8 py-4 bg-primary-dark hover:bg-primary text-white rounded-lg font-medium transform hover:scale-105 transition-all inline-flex items-center gap-2 w-full sm:w-auto justify-center"
@@ -903,7 +972,7 @@ const Home: React.FC = () => {
                     transition-all duration-300"
                 >
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-primary-light/10 dark:bg-primary-dark rounded-lg">
+                    <div className="p-2 bg-primary-light/20 dark:bg-primary-dark/30 rounded-lg transform hover:scale-110 transition-all duration-300">
                       <div className="text-primary-dark dark:text-primary-light transition-colors duration-300">
                         {skillGroup.icon}
                       </div>
@@ -937,8 +1006,10 @@ const Home: React.FC = () => {
               <div className="skill-card bg-gray-50 dark:bg-gray-800 rounded-xl p-8 
                 border border-gray-200 dark:border-gray-700/50 transition-colors duration-300">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="text-primary-dark dark:text-primary-light transition-colors duration-300">
-                    <Code2 className="w-6 h-6" />
+                  <div className="p-3 bg-primary-light/20 dark:bg-primary-dark/30 rounded-lg transform hover:scale-110 transition-all duration-300">
+                    <div className="text-primary-dark dark:text-primary-light transition-colors duration-300">
+                      <Code2 className="w-6 h-6" />
+                    </div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-300">
                     Modern Development
@@ -954,8 +1025,10 @@ const Home: React.FC = () => {
               <div className="skill-card bg-gray-50 dark:bg-gray-800 rounded-xl p-8
                 border border-gray-200 dark:border-gray-700/50 transition-colors duration-300">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="text-primary-dark dark:text-primary-light transition-colors duration-300">
-                    <Brain className="w-6 h-6" />
+                  <div className="p-3 bg-primary-light/20 dark:bg-primary-dark/30 rounded-lg transform hover:scale-110 transition-all duration-300">
+                    <div className="text-primary-dark dark:text-primary-light transition-colors duration-300">
+                      <Brain className="w-6 h-6" />
+                    </div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white transition-colors duration-300">
                     Innovation Focus
@@ -970,6 +1043,97 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      <section className="reviews-section relative py-24 px-4 bg-white dark:bg-background-dark transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white text-center mb-4 transition-colors duration-300">
+            Client Reviews
+          </h2>
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 text-center mb-16 max-w-3xl mx-auto transition-colors duration-300">
+            What our clients say about our services and solutions
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Review 1 */}
+            <div className="review-card bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-lg dark:shadow-gray-900/30 
+              border border-gray-200 dark:border-gray-700/50 transform hover:scale-[1.02] transition-all duration-300">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center transform hover:scale-110 transition-all duration-300">
+                  <span className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">MJ</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Michael Johnson</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Thebrick</p>
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                "Exceptional attention to detail in implementing our AI chatbot. The documentation was thorough, 
+                code quality was outstanding, and the entire process was smooth and professional. A truly reliable partner."
+              </p>
+              <div className="flex gap-1 text-yellow-400">
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className="review-card bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-lg dark:shadow-gray-900/30 
+              border border-gray-200 dark:border-gray-700/50 transform hover:scale-[1.02] transition-all duration-300">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center transform hover:scale-110 transition-all duration-300">
+                  <span className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">SK</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sarah Klein</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Digilearn</p>
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                "The development process was incredibly collaborative and transparent. Regular updates, 
+                clean code architecture, and a great eye for user experience. They went above and beyond 
+                to ensure our platform was exactly what we envisioned."
+              </p>
+              <div className="flex gap-1 text-yellow-400">
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+              </div>
+            </div>
+
+            {/* Review 3 */}
+            <div className="review-card bg-gray-50 dark:bg-gray-800 rounded-xl p-8 shadow-lg dark:shadow-gray-900/30 
+              border border-gray-200 dark:border-gray-700/50 transform hover:scale-[1.02] transition-all duration-300">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center transform hover:scale-110 transition-all duration-300">
+                  <span className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">TP</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tom Parker</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">ShopWave</p>
+                </div>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                "What impressed me most was the commitment to quality and best practices. The codebase is 
+                clean, well-documented, and easily maintainable. Their expertise in both e-commerce and AI 
+                integration made the development process seamless."
+              </p>
+              <div className="flex gap-1 text-yellow-400">
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+                <span>⭐</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Contact Section */}
       <section 
@@ -1057,7 +1221,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* Social Links */}
-          <div className="mt-12 flex justify-center space-x-6">
+          <div className="mt-16 flex justify-center space-x-6">
             <a 
               href="http://t.me/rajumg132" 
               target="_blank" 
@@ -1085,6 +1249,18 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 
+          text-white/50 hover:text-white/90 dark:text-white/50 dark:hover:text-white/90 rounded-full p-1.5
+          transition-all duration-300 z-50 transform hover:scale-110
+          ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+        aria-label="Scroll to top"
+      >
+        <ArrowUp className="w-3.5 h-3.5" />
+      </button>
 
       {/* Chat Button */}
       <button
