@@ -12,20 +12,20 @@ import {
   Smartphone,
   Brain,
   Bot,
-  Github,
   Linkedin,
   Twitter,
   Layout,
   Database,
   Terminal,
   MessageSquare,
-  MessageCircle
+  MessageCircle,
+  Send
 } from 'lucide-react';
 import LoadingAnimation from '../components/shared/LoadingAnimation';
 import AiChat from '../components/AiChat';
-import { Power2, Power4 } from 'gsap';
 import ThemeToggle from '../components/ThemeToggle';
-import SocialMediaManager from '../components/SocialMediaManager';
+import emailjs from '@emailjs/browser';
+import toast, { Toaster } from 'react-hot-toast';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
@@ -219,9 +219,11 @@ const Home: React.FC = () => {
     message: ''
   });
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isSocialMediaManagerOpen, setIsSocialMediaManagerOpen] = useState(false);
 
   useEffect(() => {
+    // Initialize EmailJS
+    emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+    
     const timer = setTimeout(() => setIsLoading(false), 1500);
 
     // Preload hero image
@@ -559,7 +561,7 @@ const Home: React.FC = () => {
 
           // Contact cards animations and hover effects
           const contactCards = contactSection.querySelectorAll('.contact-card-left, .contact-card-right');
-          contactCards.forEach((card, index) => {
+          contactCards.forEach(card => {
             // Initial slide-in animation
             gsap.to(card, {
               opacity: 1,
@@ -573,27 +575,6 @@ const Home: React.FC = () => {
                 toggleActions: 'play none none reverse',
                 scrub: false
               }
-            });
-
-            // Hover effects
-            card.addEventListener('mouseenter', () => {
-              gsap.to(card, {
-                y: -10,
-                scale: 1.02,
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-                duration: 0.4,
-                ease: 'power2.out'
-              });
-            });
-
-            card.addEventListener('mouseleave', () => {
-              gsap.to(card, {
-                y: 0,
-                scale: 1,
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                duration: 0.4,
-                ease: 'power2.inOut'
-              });
             });
           });
 
@@ -717,18 +698,40 @@ const Home: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const subject = encodeURIComponent(`Contact from ${formState.name}`);
-    const body = encodeURIComponent(
-      `Name: ${formState.name}\nEmail: ${formState.email}\n\nMessage:\n${formState.message}`
-    );
-    
-    window.location.href = `mailto:rajumgjobs@gmail.com?subject=${subject}&body=${body}`;
-    
-    setFormState({
-      name: '',
-      email: '',
-      message: ''
-    });
+    try {
+      const result = await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          from_name: formState.name,
+          from_email: formState.email,
+          message: formState.message,
+          to_name: 'Portfolio Owner',
+          reply_to: formState.email,
+        },
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
+
+      if (result.status === 200) {
+        toast.success('Message sent successfully!', {
+          duration: 3000,
+          position: 'top-center',
+          icon: '✅',
+        });
+
+        setFormState({
+          name: '',
+          email: '',
+          message: ''
+        });
+      }
+    } catch {
+      toast.error('Failed to send message. Please try again.', {
+        duration: 3000,
+        position: 'top-center',
+        icon: '❌',
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -765,53 +768,42 @@ const Home: React.FC = () => {
 
         <div className="hero-content relative z-20 h-full flex items-center justify-center">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="hero-title text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-8 transition-colors duration-300">
               Hi, I'm
-              <span className="hero-name text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary-dark mx-3">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-primary-dark mx-3">
                 RAJ
               </span>
             </h1>
-            <h2 className="hero-role text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-4 transition-colors duration-300">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-10 transition-colors duration-300">
               Full Stack Developer
             </h2>
             
-            {/* Key Services Badges */}
-            <div className="hero-tech-stack flex flex-wrap justify-center gap-3 mb-6">
-              {[
-                '🌐 Web Development',
-                '📱 Mobile Apps',
-                '🤖 AI Integration',
-                '🛒 E-commerce',
-                '⚡ Process Automation'
-              ].map((service) => (
-                <span 
-                  key={service} 
-                  className="px-4 py-2 bg-gray-100 dark:bg-gray-800/50 rounded-full text-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 transition-colors duration-300"
-                >
-                  {service}
-                </span>
-              ))}
-            </div>
-
-            <p className="hero-description text-xl text-gray-700 dark:text-gray-300 mb-8 max-w-2xl mx-auto transition-colors duration-300">
+            <p className="text-xl text-gray-700 dark:text-gray-300 mb-12 max-w-2xl mx-auto transition-colors duration-300">
               Transforming ideas into powerful web solutions with modern technologies
               and clean, efficient code. Specialized in building scalable applications
               with cutting-edge tech stacks.
             </p>
 
             {/* Highlight Tags */}
-            <div className="hero-highlights flex flex-wrap justify-center gap-2 mb-12">
-              <span className="text-sm text-primary-dark dark:text-primary-light">⚡ High Performance</span>
-              <span className="mx-2 text-gray-400 dark:text-gray-600">•</span>
-              <span className="text-sm text-primary-dark dark:text-primary-light">🔒 Secure Solutions</span>
-              <span className="mx-2 text-gray-400 dark:text-gray-600">•</span>
-              <span className="text-sm text-primary-dark dark:text-primary-light">📱 Responsive Design</span>
+            <div className="flex flex-wrap justify-center gap-2 mb-16">
+              
+              <span className="text-sm text-primary-dark dark:text-primary-light">🌐 Web Development</span>
+              
+              <span className="text-sm text-primary-dark dark:text-primary-light">📱 Mobile Apps</span>
+              
+              <span className="text-sm text-primary-dark dark:text-primary-light">🤖 AI Integration</span>
+              
+              <span className="text-sm text-primary-dark dark:text-primary-light">🛒 E-commerce</span>
+              
+              <span className="text-sm text-primary-dark dark:text-primary-light">⚡ Process Automation</span>
+              
+
             </div>
 
-            <div className="hero-buttons flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <button
                 onClick={() => servicesRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                className="hero-button px-8 py-4 bg-primary-dark hover:bg-primary text-white rounded-lg font-medium transform hover:scale-105 transition-all inline-flex items-center gap-2 w-full sm:w-auto justify-center"
+                className="px-8 py-4 bg-primary-dark hover:bg-primary text-white rounded-lg font-medium transform hover:scale-105 transition-all inline-flex items-center gap-2 w-full sm:w-auto justify-center"
                 aria-label="View My Services"
               >
                 View My Services
@@ -819,7 +811,7 @@ const Home: React.FC = () => {
               </button>
               <a
                 href="mailto:rajumgjobs@gmail.com"
-                className="hero-button px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transform hover:scale-105 transition-all w-full sm:w-auto text-center"
+                className="px-8 py-4 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transform hover:scale-105 transition-all w-full sm:w-auto text-center"
                 aria-label="Contact Me"
               >
                 Contact Me
@@ -828,9 +820,9 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        <div className="scroll-indicator absolute bottom-8 left-1/2 -translate-x-1/2 text-gray-600 dark:text-white z-20 will-change-transform flex flex-col items-center gap-2 transition-colors duration-300">
-          <p className="text-sm text-gray-500 dark:text-gray-400 animate-fade-in">Scroll down to explore</p>
-          <ChevronDown className="w-8 h-8 animate-bounce" aria-hidden="true" />
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-gray-600 dark:text-white z-20 will-change-transform flex flex-col items-center gap-2 transition-colors duration-300">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Scroll down to explore</p>
+          <ChevronDown className="w-8 h-8" aria-hidden="true" />
         </div>
       </div>
 
@@ -852,8 +844,8 @@ const Home: React.FC = () => {
                   border border-gray-100 dark:border-gray-700/50"
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="service-icon p-3 bg-primary-light/10 dark:bg-primary-dark rounded-lg">
-                    <div className="text-primary-dark dark:text-primary-light transition-colors duration-300">
+                  <div className="service-icon p-3 bg-primary-light/20 dark:bg-primary-dark/30 rounded-lg">
+                    <div className="text-primary-dark dark:text-primary-light/90 transition-colors duration-300">
                       {service.icon}
                     </div>
                   </div>
@@ -985,6 +977,7 @@ const Home: React.FC = () => {
         className="min-h-screen bg-gray-50 dark:bg-background-dark py-20 px-4 sm:px-6 lg:px-8 overflow-x-hidden transition-colors duration-300" 
         ref={contactRef}
       >
+        <Toaster />
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-12 transition-colors duration-300">
             Get in Touch
@@ -995,7 +988,7 @@ const Home: React.FC = () => {
               transform transition-all duration-500 opacity-0 translate-x-[-100px] contact-card-left
               border border-gray-200 dark:border-gray-700/50">
               <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white transition-colors duration-300">
-                Send me an Email
+                Send me a Message
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -1005,11 +998,10 @@ const Home: React.FC = () => {
                     value={formState.name}
                     onChange={handleInputChange}
                     placeholder="Your Name"
-                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
-                      rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 
-                      focus:ring-primary-light dark:focus:ring-primary focus:border-primary-light dark:focus:border-primary
-                      transition-colors duration-300"
                     required
+                    className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                      focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark transition-all"
                   />
                 </div>
                 <div>
@@ -1019,11 +1011,10 @@ const Home: React.FC = () => {
                     value={formState.email}
                     onChange={handleInputChange}
                     placeholder="Your Email"
-                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
-                      rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 
-                      focus:ring-primary-light dark:focus:ring-primary focus:border-primary-light dark:focus:border-primary
-                      transition-colors duration-300"
                     required
+                    className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                      focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark transition-all"
                   />
                 </div>
                 <div>
@@ -1032,20 +1023,20 @@ const Home: React.FC = () => {
                     value={formState.message}
                     onChange={handleInputChange}
                     placeholder="Your Message"
-                    rows={4}
-                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
-                      rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 
-                      focus:ring-primary-light dark:focus:ring-primary focus:border-primary-light dark:focus:border-primary
-                      transition-colors duration-300"
                     required
+                    rows={4}
+                    className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                      text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                      focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark transition-all resize-none"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary-dark hover:bg-primary text-white px-6 py-3 rounded-lg 
-                    transition-all duration-200 transform hover:scale-105"
+                  className="w-full py-2 px-4 bg-primary-dark hover:bg-primary text-white rounded-lg font-medium 
+                    transform hover:scale-105 transition-all flex items-center justify-center gap-2"
                 >
-                  Send Message
+                  <span>Send Message</span>
+                  <Send className="w-4 h-4" />
                 </button>
               </form>
             </div>
